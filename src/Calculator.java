@@ -101,91 +101,91 @@ public class Calculator extends JFrame {
             });
         }
     }
-        public double evaluareExpresie(String expresie)
+       public double evaluareExpresie(String expresie)
+    {
+        List<String> lista=toList(expresie);
+        List<String> rpn= convertireRPN(lista);
+        return evaluateRPN(rpn);
+    }
+
+    private List<String> toList(String expresie) // converteste expresia intr-o lista
+    {
+        List<String> Lista = new ArrayList<>();
+        StringBuffer nr= new StringBuffer();
+
+        for(int i=0; i<expresie.length(); i++)
         {
-            List<String> tokens=tokenizare(expresie);
-            List<String> rpn= convertireRPN(tokens);
-            return evaluateRPN(rpn);
+            char c= expresie.charAt(i);
+            if(Character.isDigit(c) || c=='.')
+            {
+                nr.append(c);
+            }
+            else{
+                if (nr.length() > 0) {
+                    Lista.add(nr.toString());
+                    nr.setLength(0);
+                }
+                if (!Character.isWhitespace(c)) {
+                    Lista.add(String.valueOf(c));
+                }
+            }
         }
 
-        private List<String> tokenizare(String expresie) // converteste expresia intr-o lista
+        if(nr.length()>0)  // posibil numar ramas
         {
-            List<String> tokens = new ArrayList<>();
-            StringBuffer nr= new StringBuffer();
-
-            for(int i=0; i<expresie.length(); i++)
-            {
-                char c= expresie.charAt(i);
-                if(Character.isDigit(c) || c=='.')
-                {
-                    nr.append(c);
-                }
-                else{
-                    if (nr.length() > 0) {
-                        tokens.add(nr.toString());
-                        nr.setLength(0);
-                    }
-                    if (!Character.isWhitespace(c)) {
-                        tokens.add(String.valueOf(c));
-                    }
-                }
-            }
-
-            if(nr.length()>0)  // posibil numar ramas
-            {
-                tokens.add(nr.toString());
-            }
-            return tokens;
+            Lista.add(nr.toString());
         }
+        return Lista;
+    }
 
-        private List<String> convertireRPN(List<String> tokens)
+    private List<String> convertireRPN(List<String> Lista)
+    {
+        List<String> RPN= new ArrayList<>();
+        Stack<String> stack=new Stack<>();
+        for(String elem : Lista)
         {
-            List<String> RPN= new ArrayList<>();
-            Stack<String> stack=new Stack<>();
-            for(String token : tokens)
-            {
-                if (isNumber(token)) {
-                    RPN.add(token);
-                } else if (token.equals("(")) {
-                    stack.push(token);
-                } else if (token.equals(")")) {
-                    while (!stack.isEmpty() && !stack.peek().equals("(")) {
-                        RPN.add(stack.pop());
-                    }
-                    if (!stack.isEmpty()) stack.pop();
-                } else if (isOperator(token)) {
-                    while (!stack.isEmpty() && isOperator(stack.peek()) &&
-                            getPrecedence(token) <= getPrecedence(stack.peek())) {
-                        RPN.add(stack.pop());
-                    }
-                    stack.push(token);
+            if (isNumber(elem)) {
+                RPN.add(elem);
+            } else if (elem.equals("(")) {
+                stack.push(elem);
+            } else if (elem.equals(")")) {
+                while (!stack.isEmpty() && !stack.peek().equals("(")) {
+                    RPN.add(stack.pop());
+                }
+                if (!stack.isEmpty()) stack.pop();
+            } else if (isOperator(elem)) {
+                while (!stack.isEmpty() && isOperator(stack.peek()) &&
+                        getPrecedence(elem) <= getPrecedence(stack.peek())) {
+                    RPN.add(stack.pop());
+                }
+                stack.push(elem);
+            }
+        }
+        while (!stack.isEmpty()) RPN.add(stack.pop());
+        return RPN;
+    }
+
+    private double evaluateRPN(List<String> RPN) {
+        Stack<Double> stack = new Stack<>();
+
+        for (String elem : RPN) {
+            if (isNumber(elem)) {
+                stack.push(Double.parseDouble(elem));
+            } else {
+                // Este operator, scoatem ultimele doua numere
+                double val2 = stack.pop();
+                double val1 = stack.pop();
+
+                switch (elem) {
+                    case "+": stack.push(val1 + val2); break;
+                    case "-": stack.push(val1 - val2); break;
+                    case "*": stack.push(val1 * val2); break;
+                    case "/": stack.push(val1 / val2); break;
                 }
             }
-            while (!stack.isEmpty()) RPN.add(stack.pop());
-            return RPN;
         }
-
-        private double evaluateRPN(List<String> RPN) {
-            Stack<Double> stack = new Stack<>();
-
-            for (String token : RPN) {
-                if (isNumber(token)) {
-                    stack.push(Double.parseDouble(token));
-                } else {
-                    // Este operator, scoatem ultimele doua numere
-                    double val2 = stack.pop();
-                    double val1 = stack.pop();
-
-                    switch (token) {
-                        case "+": stack.push(val1 + val2); break;
-                        case "-": stack.push(val1 - val2); break;
-                        case "*": stack.push(val1 * val2); break;
-                        case "/": stack.push(val1 / val2); break;
-                    }
-                }
-            }
-            return stack.pop();
-        }
+        return stack.pop();
+    }
 
     public boolean isNumber(String str)
     {
@@ -210,4 +210,4 @@ public class Calculator extends JFrame {
         if (op.equals("+") || op.equals("-")) return 1;
         return 0;
     }
-    }
+}
