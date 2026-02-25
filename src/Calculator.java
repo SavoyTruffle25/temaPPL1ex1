@@ -200,7 +200,7 @@ public class Calculator extends JFrame {
     public boolean isOperator(String str)
     {
         String operatori="+-*/";
-        return operatori.contains(str) && str.length() == 1;
+        return operatori.contains(str);
     }
 
 
